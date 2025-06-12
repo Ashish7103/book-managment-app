@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Management Dashboard</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#4f46e5',secondary:'#6366f1'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f9fafb;
+}
+.table-container {
+overflow-x: auto;
+}
+.table-container::-webkit-scrollbar {
+height: 6px;
+}
+.table-container::-webkit-scrollbar-track {
+background: #f1f1f1;
+}
+.table-container::-webkit-scrollbar-thumb {
+background: #d1d5db;
+border-radius: 8px;
+}
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+display: none;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+.skeleton {
+animation: skeleton-loading 1s linear infinite alternate;
+}
+@keyframes skeleton-loading {
+0% {
+background-color: #e5e7eb;
+}
+100% {
+background-color: #f3f4f6;
+}
+}
+.toast {
+animation: toast-in-out 3s ease forwards;
+transform: translateY(100px);
+opacity: 0;
+}
+@keyframes toast-in-out {
+0% {
+transform: translateY(100px);
+opacity: 0;
+}
+10% {
+transform: translateY(0);
+opacity: 1;
+}
+90% {
+transform: translateY(0);
+opacity: 1;
+}
+100% {
+transform: translateY(100px);
+opacity: 0;
+}
+}
+</style>
+</head>
+<body class="min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out bg-white border-r border-gray-200 shadow-sm">
+<div class="flex items-center justify-between h-16 px-4 border-b">
+<div class="flex items-center">
+<span class="text-2xl font-['Pacifico'] text-primary">logo</span>
+</div>
+<button id="closeSidebar" class="p-1 rounded-full md:hidden hover:bg-gray-100">
+<div class="w-8 h-8 flex items-center justify-center text-gray-500">
+<i class="ri-close-line ri-lg"></i>
+</div>
+</button>
+</div>
+<nav class="p-4 space-y-1">
+<a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-button text-white bg-primary">
+<div class="w-5 h-5 mr-3 flex items-center justify-center">
+<i class="ri-dashboard-line"></i>
+</div>
+<span>Dashboard</span>
+</a>
+<a href="https://readdy.ai/home/da242548-7dd0-4c62-92cb-caa44b1792d4/a0136972-8495-4e6f-ab4a-aec82828d3b0" data-readdy="true" class="flex items-center px-3 py-2 text-sm font-medium rounded-button text-gray-700 hover:bg-gray-100">
+<div class="w-5 h-5 mr-3 flex items-center justify-center">
+<i class="ri-book-2-line"></i>
+</div>
+<span>Books</span>
+</a>
+<a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-button text-gray-700 hover:bg-gray-100">
+<div class="w-5 h-5 mr-3 flex items-center justify-center">
+<i class="ri-user-line"></i>
+</div>
+<span>Authors</span>
+</a>
+<a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-button text-gray-700 hover:bg-gray-100">
+<div class="w-5 h-5 mr-3 flex items-center justify-center">
+<i class="ri-price-tag-3-line"></i>
+</div>
+<span>Categories</span>
+</a>
+<a href="#" class="flex items-center px-3 py-2 text-sm font-medium rounded-button text-gray-700 hover:bg-gray-100">
+<div class="w-5 h-5 mr-3 flex items-center justify-center">
+<i class="ri-settings-line"></i>
+</div>
+<span>Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content -->
+<div class="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
+<!-- Header -->
+<header class="bg-white border-b border-gray-200 shadow-sm">
+<div class="flex items-center justify-between h-16 px-4">
+<div class="flex items-center">
+<button id="openSidebar" class="p-1 mr-3 rounded-full md:hidden hover:bg-gray-100">
+<div class="w-8 h-8 flex items-center justify-center text-gray-500">
+<i class="ri-menu-line ri-lg"></i>
+</div>
+</button>
+<h1 class="text-xl font-semibold text-gray-800">Book Management</h1>
+</div>
+<div class="relative mx-4 flex-1 max-w-md">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-search-line"></i>
+</div>
+</div>
+<input type="search" id="searchInput" class="w-full pl-10 pr-4 py-2 border-none rounded-button bg-gray-100 focus:bg-white focus:ring-2 focus:ring-primary focus:outline-none" placeholder="Search books or authors...">
+</div>
+<div>
+<button id="addBookBtn" class="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-button hover:bg-primary/90 whitespace-nowrap">
+<div class="w-4 h-4 mr-2 flex items-center justify-center">
+<i class="ri-add-line"></i>
+</div>
+Add Book
+</button>
+</div>
+</div>
+</header>
+<!-- Filters -->
+<div class="bg-white border-b border-gray-200 px-4 py-3">
+<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="flex flex-wrap items-center gap-3">
+<div class="relative">
+<button id="genreFilterBtn" class="flex items-center px-3 py-2 text-sm font-medium bg-gray-100 rounded-button hover:bg-gray-200 whitespace-nowrap">
+<span>Genre: All</span>
+<div class="w-4 h-4 ml-2 flex items-center justify-center">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</button>
+<div id="genreDropdown" class="hidden absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg z-10">
+<div class="py-1">
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">All</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Fiction</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Non-Fiction</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Science Fiction</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Fantasy</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Mystery</a>
+</div>
+</div>
+</div>
+<div class="relative">
+<button id="statusFilterBtn" class="flex items-center px-3 py-2 text-sm font-medium bg-gray-100 rounded-button hover:bg-gray-200 whitespace-nowrap">
+<span>Status: All</span>
+<div class="w-4 h-4 ml-2 flex items-center justify-center">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</button>
+<div id="statusDropdown" class="hidden absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded shadow-lg z-10">
+<div class="py-1">
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">All</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Available</a>
+<a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary">Issued</a>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-2 bg-gray-100 rounded-button p-1">
+<button id="tableViewBtn" class="flex items-center justify-center w-8 h-8 rounded-button bg-white shadow-sm">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-table-line"></i>
+</div>
+</button>
+<button id="gridViewBtn" class="flex items-center justify-center w-8 h-8 rounded-button">
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-grid-line"></i>
+</div>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="flex-1 overflow-auto p-4">
+<!-- Table View (Default) -->
+<div id="tableView" class="bg-white rounded-lg shadow-sm">
+<div class="table-container">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Genre</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Published</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+<th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200" id="booksTableBody">
+<!-- Book rows will be populated here -->
+</tbody>
+</table>
+</div>
+<div id="tableEmpty" class="hidden py-12">
+<div class="text-center">
+<div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center text-gray-400">
+<i class="ri-book-2-line ri-3x"></i>
+</div>
+<h3 class="text-lg font-medium text-gray-900">No books found</h3>
+<p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+<div class="mt-6">
+<button id="addBookEmptyBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-button shadow-sm text-white bg-primary hover:bg-primary/90 whitespace-nowrap">
+<div class="w-4 h-4 mr-2 flex items-center justify-center">
+<i class="ri-add-line"></i>
+</div>
+Add a new book
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Grid View (Hidden by default) -->
+<div id="gridView" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+<!-- Grid cards will be populated here -->
+</div>
+<!-- Loading State -->
+<div id="loadingState" class="hidden">
+<div class="bg-white rounded-lg shadow-sm">
+<div class="table-container">
+<table class="min-w-full divide-y divide-gray-200">
+<thead class="bg-gray-50">
+<tr>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Genre</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Published</th>
+<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+<th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="bg-white divide-y divide-gray-200">
+<!-- Loading skeletons -->
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-8 skeleton rounded"></div>
+<div class="ml-4">
+<div class="h-4 w-32 skeleton rounded"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-24 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-12 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<div class="h-8 w-16 skeleton rounded inline-block"></div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-8 skeleton rounded"></div>
+<div class="ml-4">
+<div class="h-4 w-32 skeleton rounded"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-24 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-12 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<div class="h-8 w-16 skeleton rounded inline-block"></div>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-8 skeleton rounded"></div>
+<div class="ml-4">
+<div class="h-4 w-32 skeleton rounded"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-24 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-4 w-12 skeleton rounded"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="h-6 w-20 skeleton rounded-full"></div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<div class="h-8 w-16 skeleton rounded inline-block"></div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="bg-white border-t border-gray-200 px-4 py-3 flex items-center justify-between">
+<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+<div>
+<p class="text-sm text-gray-700">
+Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">42</span> results
+</p>
+</div>
+<div>
+<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+<a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+<span class="sr-only">Previous</span>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-left-s-line"></i>
+</div>
+</a>
+<a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+1
+</a>
+<a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+2
+</a>
+<a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+3
+</a>
+<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+...
+</span>
+<a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+5
+</a>
+<a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+<span class="sr-only">Next</span>
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-arrow-right-s-line"></i>
+</div>
+</a>
+</nav>
+</div>
+</div>
+<div class="flex items-center justify-between w-full sm:hidden">
+<a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+Previous
+</a>
+<div class="text-sm text-gray-500">
+Page 1 of 5
+</div>
+<a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+Next
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Add/Edit Book Modal -->
+<div id="bookModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+<div class="fixed inset-0 transition-opacity" aria-hidden="true">
+<div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+</div>
+<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+<div class="sm:flex sm:items-start">
+<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+<h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">
+Add New Book
+</h3>
+<div class="mt-4">
+<form id="bookForm" class="space-y-4">
+<input type="hidden" id="bookId">
+<div>
+<label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+<input type="text" name="title" id="title" class="mt-1 block w-full border-gray-300 rounded-button shadow-sm focus:ring-primary focus:border-primary sm:text-sm" required>
+<div id="titleError" class="hidden mt-1 text-sm text-red-600"></div>
+</div>
+<div>
+<label for="author" class="block text-sm font-medium text-gray-700">Author</label>
+<input type="text" name="author" id="author" class="mt-1 block w-full border-gray-300 rounded-button shadow-sm focus:ring-primary focus:border-primary sm:text-sm" required>
+<div id="authorError" class="hidden mt-1 text-sm text-red-600"></div>
+</div>
+<div>
+<label for="genre" class="block text-sm font-medium text-gray-700">Genre</label>
+<div class="relative">
+<select id="genre" name="genre" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-button" required>
+<option value="">Select a genre</option>
+<option value="Fiction">Fiction</option>
+<option value="Non-Fiction">Non-Fiction</option>
+<option value="Science Fiction">Science Fiction</option>
+<option value="Fantasy">Fantasy</option>
+<option value="Mystery">Mystery</option>
+<option value="Thriller">Thriller</option>
+<option value="Romance">Romance</option>
+<option value="Biography">Biography</option>
+<option value="History">History</option>
+<option value="Self-Help">Self-Help</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<div class="w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</div>
+</div>
+<div id="genreError" class="hidden mt-1 text-sm text-red-600"></div>
+</div>
+<div>
+<label for="year" class="block text-sm font-medium text-gray-700">Published Year</label>
+<input type="number" name="year" id="year" min="1000" max="2025" class="mt-1 block w-full border-gray-300 rounded-button shadow-sm focus:ring-primary focus:border-primary sm:text-sm" required>
+<div id="yearError" class="hidden mt-1 text-sm text-red-600"></div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700">Status</label>
+<div class="mt-2">
+<div class="flex items-center">
+<div class="relative inline-block w-10 mr-2 align-middle select-none">
+<input type="checkbox" name="status" id="status" class="absolute opacity-0 w-0 h-0" checked>
+<label for="status" class="block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+<div class="toggle-dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 ease-in-out"></div>
+</div>
+<span id="statusText" class="text-sm text-gray-700">Available</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700">Cover Image</label>
+<div class="mt-1 flex items-center">
+<div id="coverPreview" class="w-20 h-28 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+<div class="w-8 h-8 flex items-center justify-center text-gray-400">
+<i class="ri-image-line ri-lg"></i>
+</div>
+</div>
+<button type="button" id="uploadCoverBtn" class="ml-4 bg-white py-2 px-3 border border-gray-300 rounded-button shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary whitespace-nowrap">
+Upload
+</button>
+<input type="file" id="coverUpload" class="hidden" accept="image/*">
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<button type="button" id="saveBookBtn" class="w-full inline-flex justify-center rounded-button border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Save
+</button>
+<button type="button" id="cancelBookBtn" class="mt-3 w-full inline-flex justify-center rounded-button border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Cancel
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+<div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+<div class="fixed inset-0 transition-opacity" aria-hidden="true">
+<div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+</div>
+<span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+<div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+<div class="sm:flex sm:items-start">
+<div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+<div class="w-6 h-6 flex items-center justify-center text-red-600">
+<i class="ri-error-warning-line"></i>
+</div>
+</div>
+<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+<h3 class="text-lg leading-6 font-medium text-gray-900">
+Delete Book
+</h3>
+<div class="mt-2">
+<p class="text-sm text-gray-500" id="deleteConfirmText">
+Are you sure you want to delete this book? This action cannot be undone.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+<button type="button" id="confirmDeleteBtn" class="w-full inline-flex justify-center rounded-button border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Delete
+</button>
+<button type="button" id="cancelDeleteBtn" class="mt-3 w-full inline-flex justify-center rounded-button border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm whitespace-nowrap">
+Cancel
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Toast Notification -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50"></div>
+<script id="sidebarToggleScript">
+document.addEventListener('DOMContentLoaded', function() {
+const sidebar = document.getElementById('sidebar');
+const openSidebarBtn = document.getElementById('openSidebar');
+const closeSidebarBtn = document.getElementById('closeSidebar');
+openSidebarBtn.addEventListener('click', function() {
+sidebar.classList.remove('-translate-x-full');
+});
+closeSidebarBtn.addEventListener('click', function() {
+sidebar.classList.add('-translate-x-full');
+});
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+const isMobile = window.innerWidth < 768;
+if (isMobile && !sidebar.contains(event.target) && event.target !== openSidebarBtn) {
+sidebar.classList.add('-translate-x-full');
+}
+});
+});
+</script>
+<script id="dropdownToggleScript">
+document.addEventListener('DOMContentLoaded', function() {
+const genreFilterBtn = document.getElementById('genreFilterBtn');
+const genreDropdown = document.getElementById('genreDropdown');
+const statusFilterBtn = document.getElementById('statusFilterBtn');
+const statusDropdown = document.getElementById('statusDropdown');
+function toggleDropdown(dropdown) {
+dropdown.classList.toggle('hidden');
+}
+function closeAllDropdowns() {
+genreDropdown.classList.add('hidden');
+statusDropdown.classList.add('hidden');
+}
+genreFilterBtn.addEventListener('click', function(e) {
+e.stopPropagation();
+statusDropdown.classList.add('hidden');
+toggleDropdown(genreDropdown);
+});
+statusFilterBtn.addEventListener('click', function(e) {
+e.stopPropagation();
+genreDropdown.classList.add('hidden');
+toggleDropdown(statusDropdown);
+});
+// Handle dropdown item selection
+genreDropdown.querySelectorAll('a').forEach(item => {
+item.addEventListener('click', function(e) {
+e.preventDefault();
+genreFilterBtn.querySelector('span').textContent = `Genre: ${this.textContent}`;
+closeAllDropdowns();
+filterBooks();
+});
+});
+statusDropdown.querySelectorAll('a').forEach(item => {
+item.addEventListener('click', function(e) {
+e.preventDefault();
+statusFilterBtn.querySelector('span').textContent = `Status: ${this.textContent}`;
+closeAllDropdowns();
+filterBooks();
+});
+});
+// Close dropdowns when clicking outside
+document.addEventListener('click', function() {
+closeAllDropdowns();
+});
+});
+</script>
+<script id="viewToggleScript">
+document.addEventListener('DOMContentLoaded', function() {
+const tableViewBtn = document.getElementById('tableViewBtn');
+const gridViewBtn = document.getElementById('gridViewBtn');
+const tableView = document.getElementById('tableView');
+const gridView = document.getElementById('gridView');
+tableViewBtn.addEventListener('click', function() {
+tableViewBtn.classList.add('bg-white', 'shadow-sm');
+gridViewBtn.classList.remove('bg-white', 'shadow-sm');
+tableView.classList.remove('hidden');
+gridView.classList.add('hidden');
+});
+gridViewBtn.addEventListener('click', function() {
+gridViewBtn.classList.add('bg-white', 'shadow-sm');
+tableViewBtn.classList.remove('bg-white', 'shadow-sm');
+gridView.classList.remove('hidden');
+tableView.classList.add('hidden');
+});
+});
+</script>
+<script id="modalToggleScript">
+document.addEventListener('DOMContentLoaded', function() {
+const bookModal = document.getElementById('bookModal');
+const deleteModal = document.getElementById('deleteModal');
+const addBookBtn = document.getElementById('addBookBtn');
+const addBookEmptyBtn = document.getElementById('addBookEmptyBtn');
+const cancelBookBtn = document.getElementById('cancelBookBtn');
+const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+const modalTitle = document.getElementById('modalTitle');
+const bookForm = document.getElementById('bookForm');
+// Open Add Book Modal
+addBookBtn.addEventListener('click', function() {
+modalTitle.textContent = 'Add New Book';
+bookForm.reset();
+document.getElementById('bookId').value = '';
+document.getElementById('statusText').textContent = 'Available';
+document.getElementById('coverPreview').innerHTML = '<div class="w-8 h-8 flex items-center justify-center text-gray-400"><i class="ri-image-line ri-lg"></i></div>';
+bookModal.classList.remove('hidden');
+});
+// Open Add Book Modal from empty state
+if (addBookEmptyBtn) {
+addBookEmptyBtn.addEventListener('click', function() {
+modalTitle.textContent = 'Add New Book';
+bookForm.reset();
+document.getElementById('bookId').value = '';
+document.getElementById('statusText').textContent = 'Available';
+document.getElementById('coverPreview').innerHTML = '<div class="w-8 h-8 flex items-center justify-center text-gray-400"><i class="ri-image-line ri-lg"></i></div>';
+bookModal.classList.remove('hidden');
+});
+}
+// Close Book Modal
+cancelBookBtn.addEventListener('click', function() {
+bookModal.classList.add('hidden');
+});
+// Close Delete Modal
+cancelDeleteBtn.addEventListener('click', function() {
+deleteModal.classList.add('hidden');
+});
+// Close modals when clicking outside
+bookModal.addEventListener('click', function(e) {
+if (e.target === bookModal) {
+bookModal.classList.add('hidden');
+}
+});
+deleteModal.addEventListener('click', function(e) {
+if (e.target === deleteModal) {
+deleteModal.classList.add('hidden');
+}
+});
+});
+</script>
+<script id="formHandlingScript">
+document.addEventListener('DOMContentLoaded', function() {
+const statusToggle = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const uploadCoverBtn = document.getElementById('uploadCoverBtn');
+const coverUpload = document.getElementById('coverUpload');
+const coverPreview = document.getElementById('coverPreview');
+const saveBookBtn = document.getElementById('saveBookBtn');
+const bookForm = document.getElementById('bookForm');
+const bookModal = document.getElementById('bookModal');
+// Toggle status
+statusToggle.addEventListener('change', function() {
+const toggleDot = this.nextElementSibling.nextElementSibling;
+if (this.checked) {
+toggleDot.classList.remove('translate-x-4');
+statusText.textContent = 'Available';
+this.nextElementSibling.classList.remove('bg-primary');
+this.nextElementSibling.classList.add('bg-gray-300');
+} else {
+toggleDot.classList.add('translate-x-4');
+statusText.textContent = 'Issued';
+this.nextElementSibling.classList.remove('bg-gray-300');
+this.nextElementSibling.classList.add('bg-primary');
+}
+});
+// Handle cover image upload
+uploadCoverBtn.addEventListener('click', function() {
+coverUpload.click();
+});
+coverUpload.addEventListener('change', function() {
+if (this.files && this.files[0]) {
+const reader = new FileReader();
+reader.onload = function(e) {
+coverPreview.innerHTML = `<img src="${e.target.result}" alt="Cover Preview" class="h-full w-full object-cover">`;
+};
+reader.readAsDataURL(this.files[0]);
+}
+});
+// Form validation and submission
+saveBookBtn.addEventListener('click', function() {
+// Reset error messages
+document.querySelectorAll('[id$="Error"]').forEach(el => el.classList.add('hidden'));
+// Get form values
+const title = document.getElementById('title').value.trim();
+const author = document.getElementById('author').value.trim();
+const genre = document.getElementById('genre').value;
+const year = document.getElementById('year').value;
+const status = document.getElementById('status').checked ? 'Available' : 'Issued';
+const bookId = document.getElementById('bookId').value;
+// Validate form
+let isValid = true;
+if (!title) {
+document.getElementById('titleError').textContent = 'Title is required';
+document.getElementById('titleError').classList.remove('hidden');
+isValid = false;
+}
+if (!author) {
+document.getElementById('authorError').textContent = 'Author is required';
+document.getElementById('authorError').classList.remove('hidden');
+isValid = false;
+}
+if (!genre) {
+document.getElementById('genreError').textContent = 'Please select a genre';
+document.getElementById('genreError').classList.remove('hidden');
+isValid = false;
+}
+if (!year || year < 1000 || year > 2025) {
+document.getElementById('yearError').textContent = 'Please enter a valid year (1000-2025)';
+document.getElementById('yearError').classList.remove('hidden');
+isValid = false;
+}
+if (isValid) {
+// Simulate API call
+showLoading();
+setTimeout(() => {
+hideLoading();
+// Create or update book
+if (bookId) {
+// Update existing book
+updateBook(bookId, {
+title,
+author,
+genre,
+year,
+status
+});
+showToast('Book updated successfully', 'success');
+} else {
+// Add new book
+addBook({
+id: Date.now().toString(),
+title,
+author,
+genre,
+year,
+status
+});
+showToast('Book added successfully', 'success');
+}
+bookModal.classList.add('hidden');
+loadBooks();
+}, 1000);
+}
+});
+});
+</script>
+<script id="deleteHandlingScript">
+document.addEventListener('DOMContentLoaded', function() {
+const deleteModal = document.getElementById('deleteModal');
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+let bookToDelete = null;
+// Open Delete Modal
+window.openDeleteModal = function(bookId, bookTitle) {
+bookToDelete = bookId;
+document.getElementById('deleteConfirmText').textContent = `Are you sure you want to delete "${bookTitle}"? This action cannot be undone.`;
+deleteModal.classList.remove('hidden');
+};
+// Confirm Delete
+confirmDeleteBtn.addEventListener('click', function() {
+if (bookToDelete) {
+// Simulate API call
+showLoading();
+setTimeout(() => {
+hideLoading();
+deleteBook(bookToDelete);
+showToast('Book deleted successfully', 'success');
+deleteModal.classList.add('hidden');
+loadBooks();
+}, 1000);
+}
+});
+});
+</script>
+<script id="bookDataScript">
+// Sample book data
+let books = [
+{
+id: '1',
+title: 'The Midnight Library',
+author: 'Matt Haig',
+genre: 'Fiction',
+year: '2020',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20dark%20blue%20background%20showing%20a%20library%20at%20midnight%20with%20glowing%20shelves%20of%20books%2C%20minimalist%20design%2C%20professional%20book%20cover&width=200&height=300&seq=1&orientation=portrait'
+},
+{
+id: '2',
+title: 'Atomic Habits',
+author: 'James Clear',
+genre: 'Self-Help',
+year: '2018',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20simple%20geometric%20shapes%20on%20light%20background%2C%20professional%20self-help%20book%20design%2C%20minimalist%2C%20clean%20layout&width=200&height=300&seq=2&orientation=portrait'
+},
+{
+id: '3',
+title: 'Dune',
+author: 'Frank Herbert',
+genre: 'Science Fiction',
+year: '1965',
+status: 'Issued',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20desert%20landscape%2C%20orange%20and%20brown%20tones%2C%20sci-fi%20aesthetic%2C%20professional%20book%20cover%20design&width=200&height=300&seq=3&orientation=portrait'
+},
+{
+id: '4',
+title: 'The Silent Patient',
+author: 'Alex Michaelides',
+genre: 'Thriller',
+year: '2019',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20minimalist%20design%2C%20face%20silhouette%2C%20dark%20background%20with%20subtle%20red%20accents%2C%20thriller%20book%20cover&width=200&height=300&seq=4&orientation=portrait'
+},
+{
+id: '5',
+title: 'Educated',
+author: 'Tara Westover',
+genre: 'Biography',
+year: '2018',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20simple%20typography%20on%20light%20background%2C%20memoir%20style%2C%20professional%20book%20design%2C%20mountains%20in%20background&width=200&height=300&seq=5&orientation=portrait'
+},
+{
+id: '6',
+title: 'The Song of Achilles',
+author: 'Madeline Miller',
+genre: 'Fantasy',
+year: '2011',
+status: 'Issued',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20ancient%20Greek%20imagery%2C%20gold%20accents%20on%20dark%20background%2C%20professional%20fantasy%20book%20design&width=200&height=300&seq=6&orientation=portrait'
+},
+{
+id: '7',
+title: 'Sapiens: A Brief History of Humankind',
+author: 'Yuval Noah Harari',
+genre: 'Non-Fiction',
+year: '2011',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20human%20evolution%20silhouette%2C%20earth%20tones%2C%20professional%20non-fiction%20book%20design&width=200&height=300&seq=7&orientation=portrait'
+},
+{
+id: '8',
+title: 'Where the Crawdads Sing',
+author: 'Delia Owens',
+genre: 'Fiction',
+year: '2018',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20marsh%20landscape%2C%20misty%20water%20scene%2C%20subtle%20colors%2C%20professional%20fiction%20book%20design&width=200&height=300&seq=8&orientation=portrait'
+},
+{
+id: '9',
+title: 'The Invisible Life of Addie LaRue',
+author: 'V.E. Schwab',
+genre: 'Fantasy',
+year: '2020',
+status: 'Issued',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20stars%20and%20constellation%20pattern%2C%20dark%20blue%20background%2C%20professional%20fantasy%20book%20design&width=200&height=300&seq=9&orientation=portrait'
+},
+{
+id: '10',
+title: 'Becoming',
+author: 'Michelle Obama',
+genre: 'Biography',
+year: '2018',
+status: 'Available',
+cover: 'https://readdy.ai/api/search-image?query=book%20cover%20with%20portrait%20style%20photo%2C%20soft%20lighting%2C%20professional%20memoir%20book%20design&width=200&height=300&seq=10&orientation=portrait'
+}
+];
+document.addEventListener('DOMContentLoaded', function() {
+loadBooks();
+});
+function loadBooks() {
+showLoading();
+setTimeout(() => {
+hideLoading();
+renderBooks(books);
+}, 1000);
+}
+function renderBooks(booksData) {
+const tableBody = document.getElementById('booksTableBody');
+const gridView = document.getElementById('gridView');
+const tableEmpty = document.getElementById('tableEmpty');
+// Clear existing content
+tableBody.innerHTML = '';
+gridView.innerHTML = '';
+if (booksData.length === 0) {
+tableEmpty.classList.remove('hidden');
+} else {
+tableEmpty.classList.add('hidden');
+// Render table view
+booksData.forEach(book => {
+const row = document.createElement('tr');
+row.innerHTML = `
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center">
+<div class="h-10 w-8 flex-shrink-0 overflow-hidden rounded">
+<img src="${book.cover}" alt="${book.title}" class="h-full w-full object-cover">
+</div>
+<div class="ml-4">
+<div class="text-sm font-medium text-gray-900">${book.title}</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="text-sm text-gray-900">${book.author}</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+${book.genre}
+</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+${book.year}
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${book.status === 'Available' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+${book.status}
+</span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<button onclick="editBook('${book.id}')" class="text-primary hover:text-primary/80 mr-3">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-edit-line"></i>
+</div>
+</button>
+<button onclick="openDeleteModal('${book.id}', '${book.title.replace(/'/g, "\\'")}')" class="text-red-600 hover:text-red-900">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</td>
+`;
+tableBody.appendChild(row);
+// Render grid view
+const card = document.createElement('div');
+card.className = 'bg-white rounded-lg shadow-sm overflow-hidden flex flex-col';
+card.innerHTML = `
+<div class="h-48 overflow-hidden">
+<img src="${book.cover}" alt="${book.title}" class="w-full h-full object-cover">
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<h3 class="text-lg font-medium text-gray-900 mb-1">${book.title}</h3>
+<p class="text-sm text-gray-600 mb-2">${book.author}</p>
+<div class="flex items-center justify-between mb-2">
+<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+${book.genre}
+</span>
+<span class="text-sm text-gray-500">${book.year}</span>
+</div>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+<span class="px-2 py-1 text-xs font-semibold rounded-full ${book.status === 'Available' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+${book.status}
+</span>
+<div class="flex space-x-2">
+<button onclick="editBook('${book.id}')" class="p-1 rounded-full text-primary hover:bg-gray-100">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-edit-line"></i>
+</div>
+</button>
+<button onclick="openDeleteModal('${book.id}', '${book.title.replace(/'/g, "\\'")}')" class="p-1 rounded-full text-red-600 hover:bg-gray-100">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-delete-bin-line"></i>
+</div>
+</button>
+</div>
+</div>
+</div>
+`;
+gridView.appendChild(card);
+});
+}
+}
+function addBook(book) {
+books.unshift(book);
+}
+function updateBook(id, updatedBook) {
+const index = books.findIndex(book => book.id === id);
+if (index !== -1) {
+books[index] = { ...books[index], ...updatedBook };
+}
+}
+function deleteBook(id) {
+books = books.filter(book => book.id !== id);
+}
+window.editBook = function(id) {
+const book = books.find(book => book.id === id);
+if (book) {
+document.getElementById('modalTitle').textContent = 'Edit Book';
+document.getElementById('bookId').value = book.id;
+document.getElementById('title').value = book.title;
+document.getElementById('author').value = book.author;
+document.getElementById('genre').value = book.genre;
+document.getElementById('year').value = book.year;
+const statusToggle = document.getElementById('status');
+const toggleDot = statusToggle.nextElementSibling.nextElementSibling;
+if (book.status === 'Available') {
+statusToggle.checked = true;
+toggleDot.classList.remove('translate-x-4');
+document.getElementById('statusText').textContent = 'Available';
+statusToggle.nextElementSibling.classList.remove('bg-primary');
+statusToggle.nextElementSibling.classList.add('bg-gray-300');
+} else {
+statusToggle.checked = false;
+toggleDot.classList.add('translate-x-4');
+document.getElementById('statusText').textContent = 'Issued';
+statusToggle.nextElementSibling.classList.remove('bg-gray-300');
+statusToggle.nextElementSibling.classList.add('bg-primary');
+}
+document.getElementById('coverPreview').innerHTML = `
+<img src="${book.cover}" alt="Cover Preview" class="h-full w-full object-cover">
+`;
+document.getElementById('bookModal').classList.remove('hidden');
+}
+};
+function filterBooks() {
+const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+const genreFilter = document.getElementById('genreFilterBtn').querySelector('span').textContent.replace('Genre: ', '');
+const statusFilter = document.getElementById('statusFilterBtn').querySelector('span').textContent.replace('Status: ', '');
+let filteredBooks = books;
+// Apply search filter
+if (searchTerm) {
+filteredBooks = filteredBooks.filter(book =>
+book.title.toLowerCase().includes(searchTerm) ||
+book.author.toLowerCase().includes(searchTerm)
+);
+}
+// Apply genre filter
+if (genreFilter !== 'All') {
+filteredBooks = filteredBooks.filter(book => book.genre === genreFilter);
+}
+// Apply status filter
+if (statusFilter !== 'All') {
+filteredBooks = filteredBooks.filter(book => book.status === statusFilter);
+}
+renderBooks(filteredBooks);
+}
+// Add search functionality
+document.addEventListener('DOMContentLoaded', function() {
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', filterBooks);
+});
+</script>
+<script id="uiHelperScript">
+function showLoading() {
+document.getElementById('tableView').classList.add('hidden');
+document.getElementById('gridView').classList.add('hidden');
+document.getElementById('loadingState').classList.remove('hidden');
+}
+function hideLoading() {
+document.getElementById('loadingState').classList.add('hidden');
+document.getElementById('tableView').classList.remove('hidden');
+}
+function showToast(message, type = 'success') {
+const toastContainer = document.getElementById('toastContainer');
+const toast = document.createElement('div');
+toast.className = `toast mb-3 p-4 rounded-lg shadow-lg flex items-center ${type === 'success' ? 'bg-green-50 border-l-4 border-green-500' : 'bg-red-50 border-l-4 border-red-500'}`;
+toast.innerHTML = `
+<div class="w-6 h-6 mr-3 flex items-center justify-center ${type === 'success' ? 'text-green-500' : 'text-red-500'}">
+<i class="${type === 'success' ? 'ri-check-line' : 'ri-error-warning-line'}"></i>
+</div>
+<div class="flex-1 ${type === 'success' ? 'text-green-800' : 'text-red-800'}">
+${message}
+</div>
+<button class="ml-4 text-gray-400 hover:text-gray-500">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-close-line"></i>
+</div>
+</button>
+`;
+toastContainer.appendChild(toast);
+// Remove toast after animation completes
+setTimeout(() => {
+toast.remove();
+}, 3000);
+// Close button functionality
+toast.querySelector('button').addEventListener('click', () => {
+toast.remove();
+});
+}
+</script>
+</body>
+</html>
+
